@@ -3,7 +3,9 @@ require('dotenv').config();
 const qrcode = require('qrcode-terminal');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const express = require('express'); // AJOUT IMPORTANT
 
+const app = express(); // CRÉER UN SERVEUR EXPRESS
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const client = new Client({
@@ -26,6 +28,20 @@ const responseCache = new Map();
 const CACHE_DURATION = 5 * 60 * 1000;
 let requestCount = 0;
 const startTime = Date.now();
+
+// Route de santé pour Render
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'Bot WhatsApp actif', 
+    requests: requestCount,
+    uptime: Math.floor((Date.now() - startTime) / 1000) 
+  });
+});
+
+// Route health check
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
 
 // QR Code
 client.on('qr', qr => {
@@ -161,6 +177,12 @@ setInterval(() => {
   }
   console.log('🧹 Cache nettoyé');
 }, 10 * 60 * 1000);
+
+// DÉMARRER LE SERVEUR EXPRESS (IMPORTANT POUR RENDER)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+});
 
 // Gestion propre de l'arrêt
 process.on('SIGINT', () => {
