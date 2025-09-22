@@ -9,11 +9,17 @@ const app = express(); // CRÉER UN SERVEUR EXPRESS
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const client = new Client({
-  authStrategy: new LocalAuth({ clientId: "default" }),
+  authStrategy: new LocalAuth({ 
+    clientId: "default",
+    dataPath: "./.wwebjs_auth"  // Sauvegarde la session
+  }),
   puppeteer: { 
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
-  }
+  },
+  restartOnAuthFail: true,
+  takeoverOnConflict: true,
+  takeoverTimeoutMs: 5000
 });
 
 // Configuration optimisée
